@@ -216,24 +216,225 @@ console.log(age); //23
 
 ## The power of hoisting is when we can use functions before we even declare them in our code. 
 
+## Scoping and the Scope Chain
+
+What does scoping mean? It answers the question “where can we access a certain variable?”
+
+Each new function creates a scope: the space/environment, in which the variables it defines are accessible. 
+
+Scope chain refers to accessibility of variables between functions, depending on how the code is written. Functions with parent functions have access to the parents variables.  
+
+Note: Execution stacking refers to the order in which the functions are executed depending on how they’re called. An execution stack may have a particular order, but the order does not define what functions have access to what variables as they appear in the execution stack. For example, the function may not have access to all the variables from the functions that call them because they may not be “parents” or grand parents of the function when examining them lexically.
+
+Example. 
+```
+var a = 'Hello!';
+first();
+
+function first() {
+    var b = 'Hi!';
+    second();
+
+    function second() {
+        var c = 'Hey!';
+        third();
+    }
+};
+
+function third() {
+    var d = 'John';
+    console.log(a + b + c + d);
+}; //
+```
+
+What will happen if we run this code? 
+```
+Uncaught ReferenceError: b is not defined
+```
+
+Here the execution stack would be global object -> first() Object -> second() Object ->  third() Object.  
+
+This does NOT mean the third () has access to all the variables in the previous execution contexts. 
+
+Here, the scoping chain does not align with the executions stack.  
+
+Third is a child of the `window` object and therefore it has access to var `a` and `d`, however does not have access to `b` or `c` since they’re not in the scoping chain. 
+
+Another way of writing this would be:
+
+```
+
+var a = 'Hello!';
+first();
+
+function first() {
+    var b = 'Hi!';
+    second();
+
+    function second() {
+        var c = 'Hey!';
+        third();
+    
+        
+        function third() {
+            var d = 'John';
+            console.log(a + b + c + d);
+        }
+    }
+};
+```
+
+This results in `Hello!Hi!Hey!John`  in the console. 
+
+This works, because lexically, `third()` is now a child of `second()`, a grand child of `first()` and a great grand child of the aka `window` object, which means it inherits the variables and has access to them. 
+
+## What is “this” keyword in JavaScript?
+
+    * Regular function call: the `this` keyword points at the global object, the `window` object, in the browser. 
+    * Method call: the `this` variable points to the object that is calling the method. 
+    * The `this` keyword is not assigned a value until a function where it is define is actually called. 
+
+Example:  if you  `console.log(this)` , without any other code, you’ll able to see the `window` object and all of its properties (and WOW there is A LOT). 
+
+```
+alert: /ƒ alert()/
+applicationCache: ApplicationCache {status: 0, oncached: null, onchecking: null, ondownloading: null, onerror: null, …}
+atob: /ƒ atob()/
+blur: /ƒ ()/
+btoa: /ƒ btoa()/
+caches: CacheStorage {}
+cancelAnimationFrame: /ƒ cancelAnimationFrame()/
+cancelIdleCallback: /ƒ cancelIdleCallback()/
+captureEvents: /ƒ captureEvents()/
+chrome: {loadTimes: /ƒ/, csi: /ƒ/}
+clearInterval: /ƒ clearInterval()/
+clearTimeout: /ƒ clearTimeout()/
+
+..... way more
+```
+
+This in practice: 
+
+```
+calculateAge(1985); //34
+
+function calculateAge(year) {
+    console.log(2019 - year);
+    console.log(this); /* this variable
+    points to the window object */
+}
+```
+
+In this case `this` is a regular function call (which points to the `window` object and not a method.
+
+`this` refers to the object that called the method! 
+
+```
+var michael = {
+    name: 'Michael',
+    lastName: 'Aristocrat',
+    yearOfBirth: 1994,
+    calculateAge: function() {
+    //function expression
+        console.log(this)
+    }
+}
+
+michael.calculateAge();
+```
+
+In the console we would see: 
+
+```
+{name: "Michael", lastName: "Aristocrat", yearOfBirth: 1994, calculateAge: ƒ}
+```
+
+Again: `this` refers to the object that called the method. 
+
+If we run the following code:
+
+```
+
+var michael = {
+    name: 'Michael',
+    lastName: 'Aristocrat',
+    yearOfBirth: 1994,
+    calculateAge: function() {
+    //function expression
+        console.log(2019 - this.yearOfBirth)
+    }
+}
+
+michael.calculateAge();
+```
+
+We would see `25` in the output. This makes sense because  `this`  seen in `this.yearOfBirth`  refers to the global object, which in this case is `michael`.
 
 
+Tricky Example 
 
+```
+var michael = {
+    name: 'Michael',
+    lastName: 'Aristocrat',
+    yearOfBirth: 1994,
+    calculateAge: function() {
+        console.log(this); /* refers to the 
+        michael object */
+        console.log(2019 - this.yearOfBirth);
+        function innerFunction() {
+            console.log(this) /*refers to the
+            window object */
+        }
 
+        innerFunction();
+    }
+}
 
+michael.calculateAge();
+```
 
+We have two cases of `console.log(this)`, the first is the method `calculateAge` which is a function expression. The second is a function within the `calculateAge` method. 
 
+The first `console.log(this)` is in a method and therefor `this` refers to the object that calls the method, in this case it is `michael`. The method is `calculateAge` which is a method of the `michael` object.
 
+The second `console.log(this)` is found within a function declaration. It is found within the `innerFunction`, which is a regular function (even though its found within the method `calculateAge`). And therefor by default points to the `window` object. 
 
+The     `this` variable is only assigned a value as soon as an Object calls a method. 
 
+Example.
+```
+var michael = {
+    name: 'Michael',
+    lastName: 'Aristocrat',
+    yearOfBirth: 1994,
+    calculateAge: function() {
+        console.log(this); 
+        console.log(2019 - this.yearOfBirth);
+    }
+}
 
+var taylor = {
+    name: 'Taylor',
+    lastName: 'Ashworth',
+    yearOfBirth: 1998
+}
 
+taylor.calculateAge = michael.calculateAge;
 
+michael.calculateAge();
+taylor.calculateAge();
+```
 
+Result: 
+```
+{name: "Michael", lastName: "Aristocrat", yearOfBirth: 1994, calculateAge: ƒ}
+25
+{name: "Taylor", lastName: "Ashworth", yearOfBirth: 1998, calculateAge: ƒ}
+21
+```
 
-
-
-
+Here, the `this`  variable was assigned two different values at different times. First it was assigned: `{name: "Michael", lastName: "Aristocrat", yearOfBirth: 1994, calculateAge: ƒ}` when  `michael.calculateAge();`  was called and then it was assigned: `{name: "Taylor", lastName: "Ashworth", yearOfBirth: 1998, calculateAge: ƒ}` when `taylor.calculateAge();` was called.
 
 
 
