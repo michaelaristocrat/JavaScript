@@ -6,11 +6,11 @@ GAME RULES:
 - BUT, if the player rolls a 1, all his ROUND score gets lost. After that, it's the next player's turn
 - The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. After that, it's the next player's turn
 - The first player to reach 100 points on GLOBAL score wins the game
-
+- If the current player scores two 6s in a row, they loose their entire score
 */
 
 // create the most important variables in the game
-var scores, roundScore, activePlayer, dice, gamePlaying; 
+var scores, roundScore, activePlayer, dice, prevScore, gamePlaying; 
 
 init();
 
@@ -32,12 +32,14 @@ document.querySelector('.btn-roll').addEventListener('click', function (){
 		if (dice !== 1) {
 			//add score
 			roundScore += dice; //first get the round score 
-			score[activePlayer] += dice
+			// score[activePlayer] += dice
 			// roundSCore = roundScore + dice;
 			document.querySelector('#current-' + activePlayer).textContent = roundScore; // display the round score
 			winnerCheck();
 
 		} else {
+			
+			document.querySelector('#score-' + activePlayer).textContent = score[activePlayer];
 			// next player
 			nextPlayer();
 		}
@@ -59,29 +61,33 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
 });
 
 function nextPlayer() {
-	activePlayer === 0 ? activePlayer = 1 : activePlayer = 0;
-	roundScore = 0;
+	if (gamePlaying) {
+		activePlayer === 0 ? activePlayer = 1 : activePlayer = 0;
+		roundScore = 0;
 
-	document.querySelector('#current-0').textContent = 0;
-	document.querySelector('#current-1').textContent = 0;
+		document.querySelector('#current-0').textContent = 0;
+		document.querySelector('#current-1').textContent = 0;
 
-	//removing and adding classes in JS
-	document.querySelector('.player-0-panel').classList.toggle('active');
-	document.querySelector('.player-1-panel').classList.toggle('active');
-	document.querySelector('.dice').style.display = 'none';
+		//removing and adding classes in JS
+		document.querySelector('.player-0-panel').classList.toggle('active');
+		document.querySelector('.player-1-panel').classList.toggle('active');
+		document.querySelector('.dice').style.display = 'none';
 
-}
+		};
+};
 
 
 function winnerCheck() {
-	if (score[activePlayer] >= 100) {
+	if (score[activePlayer] >= 10) {
+		gamePlaying = false;
 		document.querySelector('#name-' + activePlayer).textContent = 'Winner!';
 		document.querySelector('.dice').style.display = 'none';
 		document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
-		document.querySelector('.player-' + activePlayer + '-panel').classList.remove('active');
+		document.querySelector('.player-1-panel').classList.remove('active');
+		document.querySelector('.player-0-panel').classList.remove('active');
 		document.querySelector('#score-' + activePlayer).textContent = score[activePlayer];
 		document.querySelector('#current-' + activePlayer).textContent = 0;
-		gamePlaying = false;
+		
 	} else {
 
 		document.querySelector('#score-' + activePlayer).textContent = score[activePlayer];
@@ -95,6 +101,7 @@ function init() {
 	score = [0, 0]; // score for each player
 	roundScore = 0; // score for the active player 
 	activePlayer = 0; // first player = 0, second = 1
+	prevScore = 0;
 
 
 	// hide the dice and set all values to zero
