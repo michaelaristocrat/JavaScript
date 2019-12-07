@@ -7,10 +7,19 @@ GAME RULES:
 - The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. After that, it's the next player's turn
 - The first player to reach 100 points on GLOBAL score wins the game
 - If the current player scores two 6s in a row, they loose their entire score
+- let the user choose the winning score
 */
 
 // create the most important variables in the game
-var scores, roundScore, activePlayer, dice, prevScore, gamePlaying; 
+var scores, roundScore, activePlayer, dice, prevScore, gamePlaying, maxScore;
+
+function startGame() {
+	maxScore = document.getElementById("max-score").value
+	if (maxScore) {
+		document.querySelector('.game-wrapper').style.display = 'block';
+		document.querySelector('.form-popup').style.display = 'none';
+	}
+};
 
 init();
 
@@ -83,7 +92,7 @@ function nextPlayer() {
 
 
 function winnerCheck() {
-	if (score[activePlayer] >= 10) {
+	if (score[activePlayer] >= maxScore) {
 		gamePlaying = false;
 		document.querySelector('#name-' + activePlayer).textContent = 'Winner!';
 		document.querySelector('.dice').style.display = 'none';
