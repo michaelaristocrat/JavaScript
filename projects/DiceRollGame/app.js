@@ -11,17 +11,22 @@ GAME RULES:
 */
 
 // create the most important variables in the game
-var scores, roundScore, activePlayer, dice, prevScore, gamePlaying, maxScore;
+var scores, roundScore, activePlayer, dice, 
+	prevScore, gamePlaying, maxScore, player1Name, player2Name;
 
 function startGame() {
 	maxScore = document.getElementById("max-score").value
+	player1Name = document.getElementById("player-0").value
+	player2Name = document.getElementById("player-1").value
 	if (maxScore) {
 		document.querySelector('.game-wrapper').style.display = 'block';
 		document.querySelector('.form-popup').style.display = 'none';
+		init();
+
 	}
 };
 
-init();
+
 
 
 
@@ -124,8 +129,8 @@ function init() {
 	document.getElementById('current-0').textContent = '0';
 	document.getElementById('score-1').textContent = '0';
 	document.getElementById('current-1').textContent = '0';
-	document.getElementById('name-0').textContent = 'Player 1';
-	document.getElementById('name-1').textContent = 'Player 2';
+	document.getElementById('name-0').textContent = player1Name;
+	document.getElementById('name-1').textContent = player2Name;
 	document.querySelector('.player-0-panel').classList.remove('winner');
 	document.querySelector('.player-1-panel').classList.remove('winner');
 	document.querySelector('.player-0-panel').classList.remove('active');
